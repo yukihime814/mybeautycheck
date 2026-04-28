@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>beauté — 美容管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #f2a7bb;
+    --rose-deep: #d97a96;
+    --rose-light: #fce8ef;
+    --rose-pale: #fdf4f7;
+    --rose-mist: #f9e0e9;
+    --white: #ffffff;
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+font-family: ‘Noto Sans JP’, sans-serif;
+background: var(–rose-pale);
+min-height: 100vh;
+color: var(–rose-deep);
+overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.app-header {
+background: var(–white);
+padding: 20px 24px 16px;
+border-bottom: 1.5px solid var(–rose-light);
+position: sticky;
+top: 0;
+z-index: 100;
+box-shadow: 0 2px 16px rgba(242,167,187,0.10);
+}
+.app-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 26px;
+font-weight: 300;
+letter-spacing: 4px;
+color: var(–rose-deep);
+}
+.app-subtitle {
+font-size: 10px;
+letter-spacing: 2px;
+color: var(–rose);
+margin-top: 2px;
+}
+
+/* ── SECTION TITLE ── */
+.section-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 22px;
+font-style: italic;
+font-weight: 300;
+letter-spacing: 2px;
+color: var(–rose-deep);
+padding: 20px 24px 4px;
+position: relative;
+display: inline-block;
+}
+.section-title::after {
+content: ‘’;
+display: block;
+width: 100%;
+height: 6px;
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘60’ height=‘6’%3E%3Cpath d=‘M0 3 Q7.5 0 15 3 Q22.5 6 30 3 Q37.5 0 45 3 Q52.5 6 60 3’ fill=‘none’ stroke=’%23f2a7bb’ stroke-width=‘1.5’/%3E%3C/svg%3E”);
+background-repeat: repeat-x;
+margin-top: 4px;
+}
+
+/* ── CARDS ── */
+.section-list {
+padding: 8px 16px 0;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.item-card {
+background: var(–white);
+border-radius: 20px;
+padding: 14px 18px;
+display: flex;
+align-items: center;
+gap: 12px;
+border: 1.5px solid var(–rose-light);
+cursor: pointer;
+transition: all 0.2s ease;
+box-shadow: 0 2px 10px rgba(242,167,187,0.08);
+}
+.item-card:active { transform: scale(0.98); background: var(–rose-pale); }
+
+.check-dot {
+width: 22px; height: 22px;
+border-radius: 50%;
+background: var(–rose-light);
+display: flex; align-items: center; justify-content: center;
+font-size: 11px;
+flex-shrink: 0;
+color: var(–rose-deep);
+}
+.item-name {
+font-size: 14px;
+font-weight: 500;
+color: var(–rose-deep);
+flex: 1;
+}
+.item-date {
+font-size: 11px;
+color: var(–rose);
+letter-spacing: 0.5px;
+}
+.item-badge {
+font-size: 10px;
+background: var(–rose-mist);
+color: var(–rose-deep);
+border-radius: 20px;
+padding: 3px 10px;
+letter-spacing: 0.5px;
+}
+.item-badge.soon {
+background: var(–rose);
+color: var(–white);
+}
+
+/* ── EMPTY STATE ── */
+.empty-note {
+font-size: 11px;
+color: var(–rose);
+padding: 6px 24px 0;
+letter-spacing: 0.5px;
+}
+
+/* ── FAB ── */
+.fab-wrap {
+display: flex;
+justify-content: center;
+padding: 28px 0 20px;
+}
+.fab {
+width: 72px; height: 72px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(–rose) 0%, var(–rose-deep) 100%);
+border: none;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-size: 28px;
+box-shadow: 0 6px 24px rgba(217,122,150,0.35);
+transition: all 0.2s ease;
+position: relative;
+}
+.fab:active { transform: scale(0.93); }
+.fab::before {
+content: ‘’;
+position: absolute;
+inset: -4px;
+border-radius: 50%;
+border: 2px solid rgba(242,167,187,0.4);
+}
+
+/* ── MODAL BACKDROP ── */
+.modal-backdrop {
+display: none;
+position: fixed; inset: 0;
+background: rgba(249,224,233,0.6);
+backdrop-filter: blur(8px);
+z-index: 200;
+align-items: flex-end;
+justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+
+.modal-sheet {
+background: var(–white);
+border-radius: 28px 28px 0 0;
+width: 100%;
+max-width: 480px;
+max-height: 92vh;
+overflow-y: auto;
+padding: 0 0 32px;
+animation: slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp {
+from { transform: translateY(100%); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-handle {
+width: 36px; height: 4px;
+background: var(–rose-light);
+border-radius: 2px;
+margin: 12px auto 0;
+}
+.modal-header {
+padding: 16px 24px 12px;
+display: flex; align-items: center; justify-content: space-between;
+border-bottom: 1px solid var(–rose-light);
+}
+.modal-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 20px;
+font-weight: 300;
+letter-spacing: 2px;
+color: var(–rose-deep);
+}
+.modal-close {
+background: var(–rose-light);
+border: none; border-radius: 50%;
+width: 30px; height: 30px;
+cursor: pointer;
+font-size: 14px; color: var(–rose-deep);
+display: flex; align-items: center; justify-content: center;
+}
+
+.modal-body { padding: 16px 24px; }
+
+/* ── FORM ── */
+.form-label {
+font-size: 11px;
+letter-spacing: 1.5px;
+color: var(–rose);
+margin-bottom: 6px;
+display: block;
+}
+.form-group { margin-bottom: 16px; }
+.form-input {
+width: 100%;
+background: var(–rose-pale);
+border: 1.5px solid var(–rose-light);
+border-radius: 14px;
+padding: 10px 14px;
+font-family: ‘Noto Sans JP’, sans-serif;
+font-size: 13px;
+color: var(–rose-deep);
+outline: none;
+transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(–rose); }
+
+.category-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+margin-bottom: 16px;
+}
+.cat-btn {
+background: var(–rose-pale);
+border: 1.5px solid var(–rose-light);
+border-radius: 14px;
+padding: 10px 4px;
+font-size: 11px;
+color: var(–rose-deep);
+cursor: pointer;
+text-align: center;
+transition: all 0.15s;
+font-family: ‘Noto Sans JP’, sans-serif;
+line-height: 1.4;
+}
+.cat-btn .cat-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+.cat-btn.active {
+background: var(–rose);
+border-color: var(–rose);
+color: var(–white);
+}
+
+/* ── SUBMIT ── */
+.btn-primary {
+width: 100%;
+background: linear-gradient(135deg, var(–rose) 0%, var(–rose-deep) 100%);
+border: none; border-radius: 20px;
+padding: 14px;
+color: var(–white);
+font-family: ‘Noto Sans JP’, sans-serif;
+font-size: 14px;
+letter-spacing: 2px;
+cursor: pointer;
+transition: opacity 0.2s;
+box-shadow: 0 4px 16px rgba(217,122,150,0.3);
+}
+.btn-primary:active { opacity: 0.85; }
+
+/* ── DETAIL MODAL ── */
+.detail-tabs {
+display: flex;
+border-bottom: 1px solid var(–rose-light);
+margin: 0 0 16px;
+}
+.tab-btn {
+flex: 1;
+background: none;
+border: none;
+padding: 12px;
+font-size: 12px;
+letter-spacing: 1px;
+color: var(–rose);
+cursor: pointer;
+border-bottom: 2px solid transparent;
+font-family: ‘Noto Sans JP’, sans-serif;
+transition: all 0.2s;
+}
+.tab-btn.active {
+color: var(–rose-deep);
+border-bottom-color: var(–rose-deep);
+font-weight: 500;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.history-item {
+background: var(–rose-pale);
+border-radius: 14px;
+padding: 12px 14px;
+margin-bottom: 10px;
+}
+.history-date {
+font-size: 12px;
+color: var(–rose);
+letter-spacing: 0.5px;
+margin-bottom: 4px;
+}
+.history-note { font-size: 13px; color: var(–rose-deep); }
+
+.photo-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+margin-bottom: 12px;
+}
+.photo-thumb {
+aspect-ratio: 1;
+border-radius: 12px;
+overflow: hidden;
+background: var(–rose-light);
+display: flex; align-items: center; justify-content: center;
+font-size: 24px;
+cursor: pointer;
+position: relative;
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-upload-btn {
+aspect-ratio: 1;
+border-radius: 12px;
+background: var(–rose-pale);
+border: 2px dashed var(–rose-light);
+display: flex; align-items: center; justify-content: center;
+font-size: 24px;
+cursor: pointer;
+color: var(–rose);
+}
+
+.url-link {
+display: flex; align-items: center; gap: 8px;
+background: var(–rose-pale);
+border-radius: 14px;
+padding: 12px 14px;
+margin-bottom: 10px;
+text-decoration: none;
+cursor: pointer;
+}
+.url-link-icon { font-size: 18px; flex-shrink: 0; }
+.url-link-text { font-size: 12px; color: var(–rose-deep); word-break: break-all; flex: 1; }
+
+/* ── SETTINGS MODAL ── */
+.settings-item {
+display: flex; align-items: center; justify-content: space-between;
+padding: 12px 0;
+border-bottom: 1px solid var(–rose-light);
+}
+.settings-name { font-size: 14px; color: var(–rose-deep); }
+.settings-input {
+width: 60px;
+background: var(–rose-pale);
+border: 1.5px solid var(–rose-light);
+border-radius: 10px;
+padding: 6px 10px;
+font-size: 13px;
+color: var(–rose-deep);
+text-align: center;
+outline: none;
+font-family: ‘Noto Sans JP’, sans-serif;
+}
+
+/* ── MISC ── */
+.divider { height: 8px; background: var(–rose-pale); margin: 4px 0; }
+
+.no-items {
+text-align: center;
+font-size: 12px;
+color: var(–rose);
+padding: 16px 0;
+letter-spacing: 1px;
+}
+
+.interval-badge {
+font-size: 10px;
+color: var(–rose);
+background: var(–rose-pale);
+border-radius: 20px;
+padding: 2px 8px;
+margin-left: 6px;
+}
+
+/* ── NAV ── */
+.nav-row {
+display: flex; justify-content: flex-end;
+padding: 12px 20px 0;
+}
+.settings-btn {
+background: var(–rose-light);
+border: none; border-radius: 20px;
+padding: 6px 14px;
+font-size: 11px;
+color: var(–rose-deep);
+cursor: pointer;
+letter-spacing: 1px;
+font-family: ‘Noto Sans JP’, sans-serif;
+}
+
+.file-input-hidden { display: none; }
+
+.type-row {
+display: flex; gap: 8px; margin-bottom: 16px;
+}
+.type-btn {
+flex: 1;
+padding: 10px;
+border-radius: 14px;
+border: 1.5px solid var(–rose-light);
+background: var(–rose-pale);
+font-size: 12px;
+color: var(–rose-deep);
+cursor: pointer;
+font-family: ‘Noto Sans JP’, sans-serif;
+letter-spacing: 0.5px;
+transition: all 0.15s;
+}
+.type-btn.active {
+background: var(–rose-mist);
+border-color: var(–rose);
+color: var(–rose-deep);
+font-weight: 500;
+}
+</style>
+
+</head>
+<body>
+
+<!-- HEADER -->
+
+<div class="app-header">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="app-title">beauté</div>
+      <div class="app-subtitle">MY BEAUTY SCHEDULE</div>
+    </div>
+    <button class="settings-btn" onclick="openSettings()">⚙ 設定</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+
+<div id="main-content">
+
+  <!-- SOROSORO -->
+
+  <div class="section-title">そろそろ</div>
+  <div class="section-list" id="sorosoro-list">
+    <div class="no-items" id="sorosoro-empty">まだありません ✨</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ZENKAI -->
+
+  <div class="section-title" style="padding-top:12px;">前回</div>
+  <div class="section-list" id="zenkai-list">
+    <div class="no-items" id="zenkai-empty">記録がありません 🌸</div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+
+<div class="fab-wrap">
+  <button class="fab" onclick="openRecord()">💖</button>
+</div>
+
+<!-- =================== MODAL: RECORD =================== -->
+
+<div class="modal-backdrop" id="modal-record">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">記録する</div>
+      <button class="modal-close" onclick="closeModal('modal-record')">✕</button>
+    </div>
+    <div class="modal-body">
+
+```
+  <!-- TYPE -->
+  <label class="form-label">種類</label>
+  <div class="type-row">
+    <button class="type-btn active" id="type-done" onclick="setType('done')">✦ 施術済</button>
+    <button class="type-btn" id="type-reserve" onclick="setType('reserve')">◎ 予約</button>
+  </div>
+
+  <!-- CATEGORY -->
+  <label class="form-label">カテゴリ</label>
+  <div class="category-grid" id="cat-grid"></div>
+
+  <!-- DATE -->
+  <div class="form-group">
+    <label class="form-label" id="date-label">施術日</label>
+    <input type="date" class="form-input" id="rec-date">
+  </div>
+
+  <!-- URL -->
+  <div class="form-group">
+    <label class="form-label">予約URL（任意）</label>
+    <input type="url" class="form-input" id="rec-url" placeholder="https://...">
+  </div>
+
+  <!-- NOTE -->
+  <div class="form-group">
+    <label class="form-label">メモ（任意）</label>
+    <input type="text" class="form-input" id="rec-note" placeholder="内容・カラー番号など">
+  </div>
+
+  <!-- PHOTO -->
+  <div class="form-group" id="photo-section">
+    <label class="form-label">写真（任意）</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="rec-photo-row">
+      <div class="photo-upload-btn" onclick="document.getElementById('rec-photo-input').click()">＋</div>
+    </div>
+    <input type="file" accept="image/*" multiple class="file-input-hidden" id="rec-photo-input" onchange="handleRecPhoto(this)">
+  </div>
+
+  <button class="btn-primary" onclick="saveRecord()">保存する</button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- =================== MODAL: DETAIL =================== -->
+
+<div class="modal-backdrop" id="modal-detail">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="detail-title">カテゴリ</div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:0;">
+      <div class="detail-tabs">
+        <button class="tab-btn active" onclick="switchTab('history')">履歴</button>
+        <button class="tab-btn" onclick="switchTab('photos')">写真</button>
+        <button class="tab-btn" onclick="switchTab('urls')">予約URL</button>
+      </div>
+      <div class="tab-panel active" id="tab-history"></div>
+      <div class="tab-panel" id="tab-photos"></div>
+      <div class="tab-panel" id="tab-urls"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MODAL: SETTINGS =================== -->
+
+<div class="modal-backdrop" id="modal-settings">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">設定</div>
+      <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="form-label" style="margin-bottom:12px;">各施術の周期（日数）を設定</label>
+      <div id="settings-list"></div>
+      <button class="btn-primary" style="margin-top:16px;" onclick="saveSettings()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MODAL: PHOTO FULLSCREEN =================== -->
+
+<div class="modal-backdrop" id="modal-photo" onclick="closeModal('modal-photo')" style="align-items:center;background:rgba(242,167,187,0.7);">
+  <img id="modal-photo-img" style="max-width:94vw;max-height:88vh;border-radius:20px;box-shadow:0 8px 40px rgba(217,122,150,0.3);" src="" alt="">
+</div>
+
+<script>
+// ========== DATA ==========
+const CATEGORIES = [
+  { id: 'matsupa',    name: 'まつパ',       icon: '👁' },
+  { id: 'matueku',    name: 'マツエク',     icon: '✨' },
+  { id: 'eyebrow',   name: 'アイブロウ',   icon: '〰' },
+  { id: 'nail',      name: 'ネイル',       icon: '💅' },
+  { id: 'haircolor', name: 'ヘアカラー',   icon: '🎨' },
+  { id: 'treatment', name: 'ヘアトリートメント', icon: '💆' },
+  { id: 'haircut',   name: 'ヘアカット',   icon: '✂' },
+  { id: 'datsumo',   name: '脱毛',         icon: '🌸' },
+];
+
+let records = JSON.parse(localStorage.getItem('beauty_records') || '[]');
+let intervals = JSON.parse(localStorage.getItem('beauty_intervals') || '{}');
+let pendingPhotos = []; // {dataUrl, name}
+let selectedCat = null;
+let recType = 'done';
+let detailCatId = null;
+
+// ========== INIT ==========
+function init() {
+  buildCatGrid();
+  buildSettings();
+  renderMain();
+  setDateDefault();
+}
+
+function setDateDefault() {
+  const today = new Date();
+  document.getElementById('rec-date').value = today.toISOString().slice(0,10);
+}
+
+// ========== RENDER MAIN ==========
+function renderMain() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const sorList = document.getElementById('sorosoro-list');
+  const zenList = document.getElementById('zenkai-list');
+
+  // Clear (keep empty messages)
+  sorList.innerHTML = '';
+  zenList.innerHTML = '';
+
+  let soroCount = 0, zenCount = 0;
+
+  CATEGORIES.forEach(cat => {
+    // Latest施術
+    const done = records.filter(r => r.catId === cat.id && r.type === 'done');
+    done.sort((a,b) => new Date(b.date) - new Date(a.date));
+    const latest = done[0] || null;
+    const interval = parseInt(intervals[cat.id]) || null;
+
+    // ZENKAI
+    if (latest) {
+      zenCount++;
+      const d = new Date(latest.date);
+      const card = makeCard(cat, latest.date, null, false);
+      zenList.appendChild(card);
+    }
+
+    // SOROSORO: if interval set and within 30 days (or overdue) since last
+    if (latest && interval) {
+      const lastD = new Date(latest.date); lastD.setHours(0,0,0,0);
+      const nextD = new Date(lastD); nextD.setDate(nextD.getDate() + interval);
+      const diff = Math.floor((nextD - today) / 86400000); // days until next
+      if (diff <= 30) {
+        soroCount++;
+        const label = diff < 0 ? `${Math.abs(diff)}日過ぎています` : diff === 0 ? '今日です！' : `あと${diff}日`;
+        const card = makeCard(cat, latest.date, label, true);
+        sorList.appendChild(card);
+      }
+    }
+  });
+
+  if (soroCount === 0) sorList.innerHTML = '<div class="no-items">まだありません ✨</div>';
+  if (zenCount === 0) zenList.innerHTML = '<div class="no-items">記録がありません 🌸</div>';
+}
+
+function makeCard(cat, dateStr, badge, isSoon) {
+  const div = document.createElement('div');
+  div.className = 'item-card';
+  div.onclick = () => openDetail(cat.id);
+
+  const d = new Date(dateStr);
+  const dateFormatted = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+
+  const intv = intervals[cat.id] ? `<span class="interval-badge">${intervals[cat.id]}日毎</span>` : '';
+
+  div.innerHTML = `
+    <div class="check-dot">☑</div>
+    <div class="item-name">${cat.icon} ${cat.name}${intv}</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+      <div class="item-date">${dateFormatted}</div>
+      ${badge ? `<div class="item-badge ${isSoon ? 'soon' : ''}">${badge}</div>` : ''}
+    </div>
+  `;
+  return div;
+}
+
+// ========== CATEGORY GRID ==========
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.id = `cat-${cat.id}`;
+    btn.innerHTML = `<span class="cat-icon">${cat.icon}</span>${cat.name}`;
+    btn.onclick = () => selectCat(cat.id);
+    grid.appendChild(btn);
+  });
+}
+
+function selectCat(id) {
+  selectedCat = id;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById(`cat-${id}`);
+  if (el) el.classList.add('active');
+}
+
+// ========== RECORD MODAL ==========
+function openRecord() {
+  selectedCat = null;
+  recType = 'done';
+  pendingPhotos = [];
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  setDateDefault();
+  document.getElementById('rec-url').value = '';
+  document.getElementById('rec-note').value = '';
+  document.getElementById('rec-photo-row').innerHTML = '<div class="photo-upload-btn" onclick="document.getElementById(\'rec-photo-input\').click()">＋</div>';
+  document.getElementById('type-done').classList.add('active');
+  document.getElementById('type-reserve').classList.remove('active');
+  document.getElementById('date-label').textContent = '施術日';
+  document.getElementById('photo-section').style.display = '';
+  openModal('modal-record');
+}
+
+function setType(t) {
+  recType = t;
+  document.getElementById('type-done').classList.toggle('active', t === 'done');
+  document.getElementById('type-reserve').classList.toggle('active', t === 'reserve');
+  document.getElementById('date-label').textContent = t === 'reserve' ? '予約日' : '施術日';
+  document.getElementById('photo-section').style.display = t === 'reserve' ? 'none' : '';
+}
+
+function handleRecPhoto(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingPhotos.push({ dataUrl: e.target.result, name: file.name });
+      renderRecPhotos();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderRecPhotos() {
+  const row = document.getElementById('rec-photo-row');
+  row.innerHTML = '';
+  pendingPhotos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `<img src="${p.dataUrl}" alt=""><div style="position:absolute;top:4px;right:4px;background:rgba(242,167,187,0.9);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;" onclick="removeRecPhoto(${i})">✕</div>`;
+    row.appendChild(div);
+  });
+  const add = document.createElement('div');
+  add.className = 'photo-upload-btn';
+  add.innerHTML = '＋';
+  add.onclick = () => document.getElementById('rec-photo-input').click();
+  row.appendChild(add);
+}
+
+function removeRecPhoto(i) { pendingPhotos.splice(i,1); renderRecPhotos(); }
+
+function saveRecord() {
+  if (!selectedCat) { alert('カテゴリを選んでください'); return; }
+  const date = document.getElementById('rec-date').value;
+  if (!date) { alert('日付を選んでください'); return; }
+
+  const rec = {
+    id: Date.now(),
+    catId: selectedCat,
+    type: recType,
+    date,
+    url: document.getElementById('rec-url').value.trim(),
+    note: document.getElementById('rec-note').value.trim(),
+    photos: recType === 'done' ? pendingPhotos.map(p => p.dataUrl) : [],
+  };
+
+  records.push(rec);
+  saveData();
+  closeModal('modal-record');
+  renderMain();
+}
+
+// ========== DETAIL MODAL ==========
+function openDetail(catId) {
+  detailCatId = catId;
+  const cat = CATEGORIES.find(c => c.id === catId);
+  document.getElementById('detail-title').textContent = `${cat.icon} ${cat.name}`;
+  switchTab('history');
+  openModal('modal-detail');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const names = ['history','photos','urls'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+
+  if (name === 'history') renderDetailHistory();
+  if (name === 'photos') renderDetailPhotos();
+  if (name === 'urls') renderDetailUrls();
+}
+
+function renderDetailHistory() {
+  const panel = document.getElementById('tab-history');
+  const recs = records.filter(r => r.catId === detailCatId);
+  recs.sort((a,b) => new Date(b.date) - new Date(a.date));
+  if (!recs.length) { panel.innerHTML = '<div class="no-items">まだ記録がありません</div>'; return; }
+  panel.innerHTML = recs.map(r => {
+    const d = new Date(r.date);
+    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    const typeLabel = r.type === 'reserve' ? '📅 予約' : '✦ 施術';
+    return `<div class="history-item">
+      <div class="history-date">${dateStr} <span style="font-size:10px;background:var(--rose-light);border-radius:10px;padding:1px 7px;">${typeLabel}</span></div>
+      ${r.note ? `<div class="history-note">${r.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderDetailPhotos() {
+  const panel = document.getElementById('tab-photos');
+  const photos = records.filter(r => r.catId === detailCatId && r.type === 'done').flatMap(r => r.photos || []);
+  if (!photos.length) { panel.innerHTML = '<div class="no-items">写真がありません</div>'; return; }
+  panel.innerHTML = `<div class="photo-grid">${photos.map(p => `<div class="photo-thumb" onclick="viewPhoto('${p}')"><img src="${p}" alt=""></div>`).join('')}</div>`;
+}
+
+function renderDetailUrls() {
+  const panel = document.getElementById('tab-urls');
+  const recs = records.filter(r => r.catId === detailCatId && r.url);
+  if (!recs.length) { panel.innerHTML = '<div class="no-items">URLがありません</div>'; return; }
+  panel.innerHTML = recs.map(r => {
+    const d = new Date(r.date);
+    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    return `<a href="${r.url}" target="_blank" class="url-link">
+      <span class="url-link-icon">🔗</span>
+      <div>
+        <div style="font-size:10px;color:var(--rose);margin-bottom:2px;">${dateStr}</div>
+        <div class="url-link-text">${r.url}</div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function viewPhoto(src) {
+  document.getElementById('modal-photo-img').src = src;
+  openModal('modal-photo');
+}
+
+// ========== SETTINGS ==========
+function buildSettings() {
+  const list = document.getElementById('settings-list');
+  list.innerHTML = CATEGORIES.map(cat => `
+    <div class="settings-item">
+      <span class="settings-name">${cat.icon} ${cat.name}</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" min="1" max="365" class="settings-input" id="int-${cat.id}" value="${intervals[cat.id] || ''}" placeholder="—">
+        <span style="font-size:11px;color:var(--rose);">日</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openSettings() {
+  buildSettings();
+  openModal('modal-settings');
+}
+
+function saveSettings() {
+  CATEGORIES.forEach(cat => {
+    const val = document.getElementById(`int-${cat.id}`).value;
+    if (val) intervals[cat.id] = parseInt(val);
+    else delete intervals[cat.id];
+  });
+  saveData();
+  closeModal('modal-settings');
+  renderMain();
+}
+
+// ========== MODAL HELPERS ==========
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on backdrop tap
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this && this.id !== 'modal-photo') closeModal(this.id);
+  });
+});
+
+// ========== PERSIST ==========
+function saveData() {
+  localStorage.setItem('beauty_records', JSON.stringify(records));
+  localStorage.setItem('beauty_intervals', JSON.stringify(intervals));
+}
+
+init();
+</script>
+
+</body>
+</html>
