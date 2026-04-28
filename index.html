@@ -4,6 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>beauté — 美容管理</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -606,8 +609,10 @@ const CATEGORIES = [
   { id: 'datsumo',   name: '脱毛',         icon: '🌸' },
 ];
 
-let records = JSON.parse(localStorage.getItem('beauty_records') || '[]');
-let intervals = JSON.parse(localStorage.getItem('beauty_intervals') || '{}');
+const STORE_KEY_REC = 'beaute_v1_records';
+const STORE_KEY_INT = 'beaute_v1_intervals';
+let records = JSON.parse(localStorage.getItem(STORE_KEY_REC) || '[]');
+let intervals = JSON.parse(localStorage.getItem(STORE_KEY_INT) || '{}');
 let pendingPhotos = []; // {dataUrl, name}
 let selectedCat = null;
 let recType = 'done';
@@ -905,8 +910,8 @@ document.querySelectorAll('.modal-backdrop').forEach(el => {
 
 // ========== PERSIST ==========
 function saveData() {
-  localStorage.setItem('beauty_records', JSON.stringify(records));
-  localStorage.setItem('beauty_intervals', JSON.stringify(intervals));
+  localStorage.setItem(STORE_KEY_REC, JSON.stringify(records));
+  localStorage.setItem(STORE_KEY_INT, JSON.stringify(intervals));
 }
 
 init();
